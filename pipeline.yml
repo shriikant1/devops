@@ -1,0 +1,64 @@
+---
+- hosts: az-local
+  become: yes
+
+  tasks:
+    # Step 1: Update apt cache
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    # Step 2: Install necessary packages for Docker
+    - name: Install Docker dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Add Docker GPG key
+      command: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+
+    - name: Add Docker repository
+      command: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    # Step 3: Clone the GitHub repository
+    - name: Clone the Python application repository
+      git:
+        repo: 'git@ssh.dev.azure.com:v3/hiop/hos/hos'
+        dest: /opt/myapp
+        version: master
+
+    # Step 4: Build the Docker image
+    - name: Build Docker image
+      command: docker build -t my-python-app /opt/myapp
+
+    # Step 5: Stop and remove any existing container
+    - name: Stop existing Docker container (if any)
+      command: docker stop my-python-app || true
+
+    - name: Remove existing Docker container (if any)
+      command: docker rm my-python-app || true
+
+    # Step 6: Run the Docker container
+    - name: Run the Python app in Docker container
+      command: docker run -d --name my-python-app -p 5000:5000 my-python-app
+
+    # Step 7: Verify the container is running
+    - name: Ensure Docker container is running
+      shell: docker ps | grep my-python-app
+
