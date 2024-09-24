@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    AZURE_CLIENT_ID: "your-client-id"
+    AZURE_SECRET: "your-client-secret"
+    AZURE_TENANT: "your-tenant-id"
+    acrname: "your-acr-name"
+    rgname: "your-resource-group-name"
+    aksname: "your-aks-name"
+    nameimagest2web: "st2web"
+    tag_stackstorm: "your-tag-stackstorm"
+    tagimagest2version: "your-tag-version"
+
+  tasks:
+    - name: Generate docker provisioning script from template
+      template:
+        src: templates/docker_provision.j2
+        dest: /tmp/docker_provision.sh
+        mode: '0755'
+
+    - name: Run docker provisioning script
+      shell: /tmp/docker_provision.sh
+

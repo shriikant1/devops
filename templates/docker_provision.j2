@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Install Docker
+sudo apt-get update
+sudo apt install docker.io -y
+
+# Check Docker version
+echo "[INFO] Checking Docker version..."
+sudo docker --version
+
+# Login to Azure using service principal
+sudo az login --service-principal -u {{ AZURE_CLIENT_ID }} -p {{ AZURE_SECRET }} --tenant {{ AZURE_TENANT }}
+
+# Docker login to Azure Container Registry (ACR)
+sudo docker login '{{ acrname }}.azurecr.io' -u {{ AZURE_CLIENT_ID }} -p {{ AZURE_SECRET }}
+
+# Get AKS credentials
+sudo az aks get-credentials --resource-group '{{ rgname }}' --name '{{ aksname }}'
+
+# Modify the Dockerfile by replacing acrhioaas with acrname
+sudo sed -i 's|acrhioaas|{{ acrname }}|' hos-build/docker-builds/st2web/Dockerfile
+
+# Modify the Dockerfile by replacing the image tag with tag_stackstorm
+sudo sed -i 's|image|{{ tag_stackstorm }}|' hos-build/docker-builds/st2web/Dockerfile
+
+# Display info message about deploying image to ACR
+echo "[INFO] Deploy image to ACR"
+
+# Navigate to Docker build directory
+cd hos-build/docker-builds/{{ nameimagest2web }}
+
+# Build Docker image
+sudo docker build -t '{{ acrname }}.azurecr.io/{{ nameimagest2web }}:{{ tagimagest2version }}' .
+
+# List Docker images
+sudo docker images
+
+# Tag the Docker image with the given version
+sudo docker tag '{{ acrname }}.azurecr.io/{{ nameimagest2web }}:{{ tagimagest2version }}' '{{ acrname }}.azurecr.io/{{ nameimagest2web }}:{{ tagimagest2version }}'
+
+# Push the Docker image to ACR
+sudo docker push '{{ acrname }}.azurecr.io/{{ nameimagest2web }}:{{ tagimagest2version }}'
