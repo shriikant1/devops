@@ -1,5 +1,5 @@
 ---
-- hosts: az-local
+- hosts: all
   become: yes
 
   tasks:
@@ -45,20 +45,20 @@
 
     # Step 4: Build the Docker image
     - name: Build Docker image
-      command: docker build -t my-python-app /opt/myapp
+      command: docker build -t HOS /opt/myapp
 
     # Step 5: Stop and remove any existing container
     - name: Stop existing Docker container (if any)
-      command: docker stop my-python-app || true
+      command: docker stop HOS || true
 
     - name: Remove existing Docker container (if any)
-      command: docker rm my-python-app || true
+      command: docker rm HOS || true
 
     # Step 6: Run the Docker container
     - name: Run the Python app in Docker container
-      command: docker run -d --name my-python-app -p 5000:5000 my-python-app
+      command: docker run -d --name HOS -p 5000:5000 my-python-app
 
     # Step 7: Verify the container is running
     - name: Ensure Docker container is running
-      shell: docker ps | grep my-python-app
+      shell: docker ps | grep HOS
 

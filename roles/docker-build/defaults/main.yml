@@ -1,0 +1,6 @@
+---
+docker_registry: "harbor.gsd.hitachivantara.com/hioaas-dev/"
+docker_username: "{{ lookup('env', 'DOCKER_USERNAME') }}"  
+docker_password: "{{ lookup('env', 'DOCKER_PASSWORD') }}" 
+workfolder: "{{ lookup('env', 'BUILD_REPOSITORY_LOCALPATH') }}"
+deployment_env: "{{ lookup('env', 'DEPLOYMENT_ENV') }}"
